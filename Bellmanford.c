@@ -1,102 +1,65 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <limits.h>
- 
-struct Edge
-{
-    int source, destination, weight;
-};
- 
-struct Graph
-{
-    int V, E;
-    struct Edge* edge;
-};
- 
-struct Graph* createGraph(int V, int E)
-{
-    struct Graph* graph = (struct Graph*) malloc( sizeof(struct Graph));
-    graph->V = V;   
-    graph->E = E;
-    graph->edge = (struct Edge*) malloc( graph->E * sizeof( struct Edge ) );
-    return graph;
-}
- 
-void FinalSolution(int dist[], int n)
-{
-    printf("\nVertex\tDistance from Source Vertex\n");
-    int i;
- 
-    for (i = 0; i < n; ++i){
-printf("%d \t\t %d\n", i, dist[i]);
-}
-}
- 
-void BellmanFord(struct Graph* graph, int source)
-{
-    int V = graph->V;
- 
-    int E = graph->E;
- 
-    int StoreDistance[V];
- 
-    int i,j;
- 
-    for (i = 0; i < V; i++)
-        StoreDistance[i] = INT_MAX;
- 
-    StoreDistance[source] = 0;
 
-    for (i = 1; i <= V-1; i++)
+#define Vertices 5
+
+//function to initialize the distances to infinity and parents to null initially
+void initializeSingleSource(int distance[], int parent[], int source)
+{
+    int i;
+    for (i=0; i< Vertices; i++)
     {
-        for (j = 0; j < E; j++)
+        distance[i] = INT_MAX;
+        parent[i] = -1;
+    }
+    distance[source] = 0; //source to itself
+}
+
+// the algorithm for all combinations of vertices edges
+void bellmanFord(int graph[][Vertices], int distance[], int parent[], int source)
+{
+    int u, v;
+    for (u=0; u<Vertices; u++)
+    {
+        for (v=0; v<Vertices; v++)
         {
-            int u = graph->edge[j].source;
- 
-            int v = graph->edge[j].destination;
- 
-            int weight = graph->edge[j].weight;
- 
-            if (StoreDistance[u] + weight < StoreDistance[v])
-                StoreDistance[v] = StoreDistance[u] + weight;
+            if (graph[u][v]!=0 && distance[u]+graph[u][v] < distance[v]) // relax
+            {
+                distance[v] = distance[u]+graph[u][v];
+                parent[v] = u;
+            }
         }
     }
-
-    for (i = 0; i < E; i++)
-    {
-        int u = graph->edge[i].source;
- 
-        int v = graph->edge[i].destination;
- 
-        int weight = graph->edge[i].weight;
- 
-        if (StoreDistance[u] + weight < StoreDistance[v])
-            printf("This graph contains negative edge cycle\n");
-    }
- 
-    FinalSolution(StoreDistance, V);
- 
-    return;
 }
- 
-int main()
+
+void printTable(int distance[], int parent[])
 {
-    int V,E,S;  
-printf("Enter number of vertices in graph\n");
-    scanf("%d",&V);
-printf("Enter number of edges in graph\n");
-    scanf("%d",&E);
-printf("Enter your source vertex number\n");
-scanf("%d",&S);
-    struct Graph* graph = createGraph(V, E);    
-    int i;
-    for(i=0;i<E;i++){
-        printf("\nEnter edge %d properties Source, destination, weight respectively\n",i+1);
-        scanf("%d",&graph->edge[i].source);
-        scanf("%d",&graph->edge[i].destination);
-        scanf("%d",&graph->edge[i].weight);
+    printf("Vertex\tDistance\tparent\n");
+    for(int i=0; i<Vertices; i++)
+    {
+        printf("\t%d\t\t%d\t\t%d\n", i, distance[i], parent[i]);
     }
-    BellmanFord(graph, S);
-    return 0;
+}
+
+int main () {
+                                //   s  t  x  y  z  
+   int graph[Vertices][Vertices] = {{0, 6, 0, 7, 0},  //s
+                                    {0, 0, 5, 8, -4}, //t
+                                    {0, -2, 0, 0, 0}, //x
+                                    {0, 0, -3, 0, 9}, //y          
+                                    {2, 0, 7, 0, 0}}; //z          
+    
+    int source = 0;
+    int distance[Vertices], parent[Vertices];
+
+    initializeSingleSource(distance, parent, source);
+
+    // A node can be having at most V-1 edges from source
+    for (int i=0; i<Vertices-1; i++)
+        bellmanFord(graph, distance, parent, source);
+
+    printTable(distance, parent);
+    
+    return 0;                                   
 }
